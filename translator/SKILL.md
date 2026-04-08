@@ -2,7 +2,7 @@
 name: translator
 description: Translate text between any languages and display the result in a beautiful visual card showing both the original and translated text with language information.
 metadata:
-  homepage: https://github.com/YOUR_USERNAME/translator-skill
+  homepage: https://github.com/felixv99/translator-skill
 ---
 
 # Translator
