@@ -128,6 +128,44 @@
             color: #10b981;
         }
 
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .speak-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .speak-btn:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+
+        .speak-btn.speaking {
+            border-color: #4f46e5;
+            background: #eef2ff;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         .footer {
             padding: 10px 20px 14px;
             display: flex;
@@ -178,17 +216,23 @@
         <div class="section">
             <div class="section-label source-label">Original</div>
             <div class="text-block source-text" id="source-text"></div>
-            <button class="copy-btn" onclick="copyText('source')">
-                <span>&#x2398;</span> Copy
-            </button>
+            <div class="action-row">
+                <button class="speak-btn" id="speak-source-btn" onclick="speak('source')" title="Listen">🔊</button>
+                <button class="copy-btn" onclick="copyText('source')">
+                    <span>&#x2398;</span> Copy
+                </button>
+            </div>
         </div>
 
         <div class="section">
             <div class="section-label target-label">Translation</div>
             <div class="text-block target-text" id="target-text"></div>
-            <button class="copy-btn" onclick="copyText('target')">
-                <span>&#x2398;</span> Copy
-            </button>
+            <div class="action-row">
+                <button class="speak-btn" id="speak-target-btn" onclick="speak('target')" title="Listen">🔊</button>
+                <button class="copy-btn" onclick="copyText('target')">
+                    <span>&#x2398;</span> Copy
+                </button>
+            </div>
         </div>
 
         <div class="footer">
@@ -235,14 +279,36 @@
             });
         }
 
+        let sourceLangCode = '';
+        let targetLangCode = '';
+
+        function speak(which) {
+            if (!window.speechSynthesis) return;
+
+            window.speechSynthesis.cancel();
+
+            const text = document.getElementById(which === 'source' ? 'source-text' : 'target-text').textContent;
+            const langCode = which === 'source' ? sourceLangCode : targetLangCode;
+            const btn = document.getElementById(which === 'source' ? 'speak-source-btn' : 'speak-target-btn');
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (langCode) utterance.lang = langCode;
+
+            utterance.onstart = () => btn.classList.add('speaking');
+            utterance.onend = () => btn.classList.remove('speaking');
+            utterance.onerror = () => btn.classList.remove('speaking');
+
+            window.speechSynthesis.speak(utterance);
+        }
+
         function init() {
             const params = new URLSearchParams(window.location.search);
             const sourceText = params.get('st');
             const translatedText = params.get('tt');
             const sourceLang = params.get('sl');
             const targetLang = params.get('tl');
-            const sourceLangCode = params.get('slc');
-            const targetLangCode = params.get('tlc');
+            sourceLangCode = params.get('slc') || '';
+            targetLangCode = params.get('tlc') || '';
 
             if (!sourceText || !translatedText) {
                 document.getElementById('error-view').style.display = 'block';
