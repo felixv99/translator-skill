@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <script>
+        window['ai_edge_gallery_get_result'] = async (data) => {
+            try {
+                const jsonData = JSON.parse(data);
+
+                const required = ['sourceText', 'translatedText', 'sourceLang', 'targetLang'];
+                for (const field of required) {
+                    if (!jsonData[field]) {
+                        return JSON.stringify({ error: `Missing required field: ${field}` });
+                    }
+                }
+
+                const params = new URLSearchParams({
+                    st: jsonData.sourceText,
+                    tt: jsonData.translatedText,
+                    sl: jsonData.sourceLang,
+                    tl: jsonData.targetLang,
+                    slc: jsonData.sourceLangCode || '',
+                    tlc: jsonData.targetLangCode || '',
+                });
+
+                return JSON.stringify({
+                    result: `Translation complete: "${jsonData.sourceText}" → "${jsonData.translatedText}"`,
+                    webview: {
+                        url: `webview.html?${params.toString()}`,
+                        aspectRatio: 1.4
+                    }
+                });
+            } catch (e) {
+                console.error('Translator skill error:', e);
+                return JSON.stringify({ error: `Translation display failed: ${e.message}` });
+            }
+        };
+    </script>
+</body>
+</html>

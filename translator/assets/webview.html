@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .lang-route {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .lang-badge {
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 3px 10px;
+            font-size: 12px;
+        }
+
+        .arrow {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .section {
+            padding: 18px 20px;
+        }
+
+        .section + .section {
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .section-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .source-label { color: #6b7280; }
+        .target-label { color: #4f46e5; }
+
+        .text-block {
+            font-size: 16px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .source-text { color: #374151; }
+        .target-text { color: #1a1a2e; font-weight: 500; }
+
+        .copy-btn {
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 12px;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .copy-btn:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+
+        .copy-btn.copied {
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .footer {
+            padding: 10px 20px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .powered-by {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #d1d5db;
+        }
+
+        .lang-flag {
+            font-size: 18px;
+        }
+
+        #error-view {
+            padding: 24px;
+            text-align: center;
+            color: #ef4444;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="error-view" style="display:none">
+        <p>Could not load translation data.</p>
+    </div>
+
+    <div class="card" id="card" style="display:none">
+        <div class="header">
+            <span class="header-title">Translation</span>
+            <div class="lang-route">
+                <span class="lang-badge" id="source-lang-badge">—</span>
+                <span class="arrow">→</span>
+                <span class="lang-badge" id="target-lang-badge">—</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-label source-label">Original</div>
+            <div class="text-block source-text" id="source-text"></div>
+            <button class="copy-btn" onclick="copyText('source')">
+                <span>&#x2398;</span> Copy
+            </button>
+        </div>
+
+        <div class="section">
+            <div class="section-label target-label">Translation</div>
+            <div class="text-block target-text" id="target-text"></div>
+            <button class="copy-btn" onclick="copyText('target')">
+                <span>&#x2398;</span> Copy
+            </button>
+        </div>
+
+        <div class="footer">
+            <span class="powered-by">Translated by on-device AI</span>
+        </div>
+    </div>
+
+    <script>
+        function getLanguageEmoji(code) {
+            const flags = {
+                en: '🇬🇧', es: '🇪🇸', fr: '🇫🇷', de: '🇩🇪', it: '🇮🇹',
+                pt: '🇵🇹', ja: '🇯🇵', zh: '🇨🇳', ko: '🇰🇷', ar: '🇸🇦',
+                ru: '🇷🇺', nl: '🇳🇱', pl: '🇵🇱', tr: '🇹🇷', hi: '🇮🇳',
+                sv: '🇸🇪', da: '🇩🇰', fi: '🇫🇮', no: '🇳🇴', cs: '🇨🇿',
+                hu: '🇭🇺', ro: '🇷🇴', uk: '🇺🇦', he: '🇮🇱', th: '🇹🇭',
+                vi: '🇻🇳', id: '🇮🇩', ms: '🇲🇾', el: '🇬🇷', sk: '🇸🇰',
+            };
+            return flags[code?.toLowerCase()] || '🌐';
+        }
+
+        function copyText(which) {
+            const el = document.getElementById(which === 'source' ? 'source-text' : 'target-text');
+            const btn = el.parentElement.querySelector('.copy-btn');
+            navigator.clipboard.writeText(el.textContent).then(() => {
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = '<span>⎘</span> Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // Fallback for webviews without clipboard API
+                const range = document.createRange();
+                range.selectNode(el);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = '<span>⎘</span> Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function init() {
+            const params = new URLSearchParams(window.location.search);
+            const sourceText = params.get('st');
+            const translatedText = params.get('tt');
+            const sourceLang = params.get('sl');
+            const targetLang = params.get('tl');
+            const sourceLangCode = params.get('slc');
+            const targetLangCode = params.get('tlc');
+
+            if (!sourceText || !translatedText) {
+                document.getElementById('error-view').style.display = 'block';
+                return;
+            }
+
+            const sourceFlag = getLanguageEmoji(sourceLangCode);
+            const targetFlag = getLanguageEmoji(targetLangCode);
+
+            document.getElementById('source-lang-badge').textContent = `${sourceFlag} ${sourceLang || sourceLangCode || '?'}`;
+            document.getElementById('target-lang-badge').textContent = `${targetFlag} ${targetLang || targetLangCode || '?'}`;
+            document.getElementById('source-text').textContent = sourceText;
+            document.getElementById('target-text').textContent = translatedText;
+
+            document.getElementById('card').style.display = 'block';
+        }
+
+        init();
+    </script>
+</body>
+</html>
