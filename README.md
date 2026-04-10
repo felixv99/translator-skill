@@ -2,7 +2,7 @@
 
 A skill for the [AI Edge Gallery](https://github.com/google-ai-edge/gallery) app that translates text between any languages using the on-device LLM, then renders the result as an interactive card in the chat UI.
 
-![Skill in use](screeenshots/demo.jpeg)
+![Skill in use](screenshots/demo.jpeg)
 
 ## What it does
 
